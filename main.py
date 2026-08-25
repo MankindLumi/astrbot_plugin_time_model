@@ -201,42 +201,75 @@ class TimeModel(Star):
         return ("默认", d.get("provider") or "", d.get("model") or "")
 
     @staticmethod
+    def _type_name(part) -> str:
+        """从 dict 或 ContentPart 对象里取出 type 值并转小写字符串。"""
+        if isinstance(part, dict):
+            return str(part.get("type", "") or "").lower()
+        t = getattr(part, "type", None)
+        if hasattr(t, "value"):  # 枚举类型
+            t = t.value
+        return str(t or "").lower()
+
+    @staticmethod
     def _has_multimodal(event, req=None) -> bool:
-        """判断请求是否含图片/视频等多模态媒体（含历史上下文中的图片）。"""
+        """判断请求是否含图片/视频/音频等多模态媒体（含历史上下文中的图片）。"""
+        media_types = {"Image", "Video"}
+        media_part_types = {"image_url", "image", "audio_url", "input_audio", "video"}
+
         # 1) event 消息组件含图片/视频
         try:
             msg = getattr(event, "message_obj", None)
             if msg is not None:
                 comps = getattr(msg, "message", None) or []
-                media_types = {"Image", "Video"}
                 for comp in comps:
-                    t = getattr(comp, "type", None)
-                    val = t.value if hasattr(t, "value") else t
-                    if isinstance(val, str) and val in media_types:
+                    val = TimeModel._type_name(comp)
+                    if val in media_types:
                         return True
         except Exception as exc:  # noqa: BLE001
             logger.warning(f"[TimeModel] 检测 event 媒体失败: {exc}")
-        # 2) LLM 请求 payload 里含图片（含历史上下文带的图）
+
+        if req is None:
+            return False
+
+        # 2) 当前消息的图片/音频 URL 列表
+        for attr in ("image_urls", "audio_urls"):
+            try:
+                urls = getattr(req, attr, None)
+                if isinstance(urls, (list, tuple)) and any(urls):
+                    return True
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(f"[TimeModel] 检测 {attr} 失败: {exc}")
+
+        # 3) 额外内容块（AstrBot ContentPart，如 image_url / audio_url）
         try:
-            if isinstance(req, dict):
-                msgs = req.get("messages") or []
-            else:
-                msgs = getattr(req, "messages", None) or []
-            if isinstance(msgs, list):
+            parts = getattr(req, "extra_user_content_parts", None) or []
+            if isinstance(parts, (list, tuple)):
+                for part in parts:
+                    if TimeModel._type_name(part) in media_part_types:
+                        return True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(f"[TimeModel] 检测 extra_user_content_parts 失败: {exc}")
+
+        # 4) 历史上下文（OpenAI 格式），含历史图片/音频。旧版字段名 messages 一并兜底。
+        try:
+            for field in ("contexts", "messages"):
+                msgs = getattr(req, field, None)
+                if not isinstance(msgs, list):
+                    continue
                 for m in msgs:
-                    content = None
-                    if isinstance(m, dict):
-                        content = m.get("content")
-                    else:
-                        content = getattr(m, "content", None)
+                    if not isinstance(m, dict):
+                        continue
+                    content = m.get("content")
                     if isinstance(content, list):
                         for part in content:
-                            if isinstance(part, dict):
-                                ptype = part.get("type")
-                                if ptype == "image_url" or "image_url" in part or ptype == "image":
-                                    return True
+                            if TimeModel._type_name(part) in media_part_types:
+                                return True
+                    elif isinstance(content, dict):
+                        if TimeModel._type_name(content) in media_part_types:
+                            return True
         except Exception as exc:  # noqa: BLE001
-            logger.warning(f"[TimeModel] 检测 req 媒体失败: {exc}")
+            logger.warning(f"[TimeModel] 检测 contexts 失败: {exc}")
+
         return False
 
     # ---------- LLM 请求钩子：切换模型 ----------
