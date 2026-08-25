@@ -1,6 +1,21 @@
 name: astrbot_plugin_time_model
 display_name: 时段切换模型
-desc: 按服务器时间自动切换 AI 模型（如白天用便宜模型、夜间用强模型），配置随时可改
-version: v1.0.0
+short_desc: 按服务器时间自动切换 AI 模型，白天省钱、夜间更强
+desc: |
+  按服务器时间自动切换 AI 模型，例如白天高峰用便宜模型、夜间低谷用更强模型。
+
+  支持两种配置方式：
+  - AstrBot WebUI 可视化配置时段与模型（推荐）
+  - 命令行指令实时增删时段规则（自动落盘，无需重启）
+
+  典型用法：低谷时段（如 00:30-08:30）切到 deepseek 等强模型，高峰时段切回 glm 等便宜模型。
+version: 1.0.0
 author: operit
-repo: "https://github.com/MankindLumi/astrbot_plugin_time_model"
+repo: https://github.com/MankindLumi/astrbot_plugin_time_model
+astrbot_version: ">=4.17.0"
+tags:
+  - model
+  - schedule
+  - deepseek
+  - llm
+  - model-switch
