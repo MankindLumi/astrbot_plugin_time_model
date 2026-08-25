@@ -1,0 +1,114 @@
+{
+  "enable": {
+    "description": "启用插件",
+    "type": "bool",
+    "hint": "关闭后不再按时间切换模型，全部走 AstrBot 默认模型。",
+    "default": true
+  },
+  "timezone": {
+    "description": "时区",
+    "type": "string",
+    "hint": "按该时区判断时段；留空则使用服务器本地时间。",
+    "options": [
+      "",
+      "Asia/Shanghai",
+      "Asia/Hong_Kong",
+      "Asia/Tokyo",
+      "UTC",
+      "America/New_York",
+      "Europe/London"
+    ],
+    "labels": [
+      "跟随服务器",
+      "中国 (UTC+8)",
+      "香港 (UTC+8)",
+      "日本 (UTC+9)",
+      "UTC",
+      "美国纽约 (UTC-5)",
+      "英国伦敦 (UTC+0)"
+    ],
+    "default": "Asia/Shanghai"
+  },
+  "schedules": {
+    "description": "时段规则",
+    "type": "template_list",
+    "hint": "按列表顺序匹配，命中即切换到对应模型；支持跨天（如 22:00-08:00 表示夜间）。",
+    "templates": {
+      "schedule": {
+        "name": "时段",
+        "display_item": "name",
+        "items": {
+          "name": {
+            "description": "名称",
+            "type": "string",
+            "hint": "仅用于展示，如“夜间低价”。",
+            "default": ""
+          },
+          "start": {
+            "description": "开始时间",
+            "type": "string",
+            "hint": "24 小时制 HH:MM，如 00:30。",
+            "default": "00:00"
+          },
+          "end": {
+            "description": "结束时间",
+            "type": "string",
+            "hint": "24 小时制 HH:MM，如 08:30；可跨天。",
+            "default": "08:00"
+          },
+          "provider": {
+            "description": "模型供应商",
+            "type": "string",
+            "hint": "填 AstrBot 里的服务商 ID，如 deepseek / zhipu / openai / doubao。",
+            "default": ""
+          },
+          "model": {
+            "description": "模型名",
+            "type": "string",
+            "hint": "该服务商下的模型名，如 deepseek-chat / glm-4-air。",
+            "default": ""
+          }
+        }
+      }
+    },
+    "default": [
+      {
+        "name": "低谷（DeepSeek 错峰）",
+        "start": "00:30",
+        "end": "08:30",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash-vision"
+      },
+      {
+        "name": "高峰（智谱）",
+        "start": "08:30",
+        "end": "00:30",
+        "provider": "zhipu",
+        "model": "glm-4-air"
+      }
+    ]
+  },
+  "default_model": {
+    "description": "默认模型（无时段命中时使用）",
+    "type": "object",
+    "hint": "当所有时段都不命中时回退到该模型；provider 和 model 都留空表示不干预。",
+    "items": {
+      "provider": {
+        "description": "模型供应商",
+        "type": "string",
+        "hint": "如 deepseek / zhipu。",
+        "default": ""
+      },
+      "model": {
+        "description": "模型名",
+        "type": "string",
+        "hint": "如 deepseek-chat / glm-4-air。",
+        "default": ""
+      }
+    },
+    "default": {
+      "provider": "",
+      "model": ""
+    }
+  }
+}
