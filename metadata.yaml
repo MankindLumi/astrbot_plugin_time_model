@@ -3,4 +3,4 @@ display_name: 时段切换模型
 desc: 按服务器时间自动切换 AI 模型（如白天用便宜模型、夜间用强模型），配置随时可改
 version: v1.0.0
 author: operit
-repo: ""
+repo: "https://github.com/MankindLumi/astrbot_plugin_time_model"
