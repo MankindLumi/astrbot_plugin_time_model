@@ -201,21 +201,42 @@ class TimeModel(Star):
         return ("默认", d.get("provider") or "", d.get("model") or "")
 
     @staticmethod
-    def _has_multimodal(event) -> bool:
-        """判断消息是否包含图片/视频等多模态媒体（需视觉模型）。"""
+    def _has_multimodal(event, req=None) -> bool:
+        """判断请求是否含图片/视频等多模态媒体（含历史上下文中的图片）。"""
+        # 1) event 消息组件含图片/视频
         try:
             msg = getattr(event, "message_obj", None)
-            if msg is None:
-                return False
-            comps = getattr(msg, "message", None) or []
-            media_types = {"Image", "Video"}
-            for comp in comps:
-                t = getattr(comp, "type", None)
-                val = t.value if hasattr(t, "value") else t
-                if isinstance(val, str) and val in media_types:
-                    return True
+            if msg is not None:
+                comps = getattr(msg, "message", None) or []
+                media_types = {"Image", "Video"}
+                for comp in comps:
+                    t = getattr(comp, "type", None)
+                    val = t.value if hasattr(t, "value") else t
+                    if isinstance(val, str) and val in media_types:
+                        return True
         except Exception as exc:  # noqa: BLE001
-            logger.warning(f"[TimeModel] 检测媒体消息时出错: {exc}")
+            logger.warning(f"[TimeModel] 检测 event 媒体失败: {exc}")
+        # 2) LLM 请求 payload 里含图片（含历史上下文带的图）
+        try:
+            if isinstance(req, dict):
+                msgs = req.get("messages") or []
+            else:
+                msgs = getattr(req, "messages", None) or []
+            if isinstance(msgs, list):
+                for m in msgs:
+                    content = None
+                    if isinstance(m, dict):
+                        content = m.get("content")
+                    else:
+                        content = getattr(m, "content", None)
+                    if isinstance(content, list):
+                        for part in content:
+                            if isinstance(part, dict):
+                                ptype = part.get("type")
+                                if ptype == "image_url" or "image_url" in part or ptype == "image":
+                                    return True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(f"[TimeModel] 检测 req 媒体失败: {exc}")
         return False
 
     # ---------- LLM 请求钩子：切换模型 ----------
@@ -227,7 +248,7 @@ class TimeModel(Star):
         if not self.cfg.get("enable", True):
             return
         try:
-            if self._has_multimodal(event):
+            if self._has_multimodal(event, req):
                 logger.info("[TimeModel] 检测到图片/视频媒体，跳过时段模型切换（保留视觉模型）")
                 return
 
