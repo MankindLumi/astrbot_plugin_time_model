@@ -200,6 +200,24 @@ class TimeModel(Star):
         d = self.cfg.get("default_model") or self.cfg.get("default") or {}
         return ("默认", d.get("provider") or "", d.get("model") or "")
 
+    @staticmethod
+    def _has_multimodal(event) -> bool:
+        """判断消息是否包含图片/视频等多模态媒体（需视觉模型）。"""
+        try:
+            msg = getattr(event, "message_obj", None)
+            if msg is None:
+                return False
+            comps = getattr(msg, "message", None) or []
+            media_types = {"Image", "Video"}
+            for comp in comps:
+                t = getattr(comp, "type", None)
+                val = t.value if hasattr(t, "value") else t
+                if isinstance(val, str) and val in media_types:
+                    return True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(f"[TimeModel] 检测媒体消息时出错: {exc}")
+        return False
+
     # ---------- LLM 请求钩子：切换模型 ----------
 
     @filter.on_llm_request()
@@ -209,6 +227,10 @@ class TimeModel(Star):
         if not self.cfg.get("enable", True):
             return
         try:
+            if self._has_multimodal(event):
+                logger.info("[TimeModel] 检测到图片/视频媒体，跳过时段模型切换（保留视觉模型）")
+                return
+
             src, provider, model = self._pick()
             if not provider and not model:
                 return  # 无匹配且无默认，不干预

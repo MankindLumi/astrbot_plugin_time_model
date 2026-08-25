@@ -65,7 +65,7 @@
           "model": {
             "description": "模型名",
             "type": "string",
-            "hint": "该服务商下的模型名，如 deepseek-chat / glm-4-air。",
+            "hint": "该服务商下的模型名，如 deepseek-chat / glm-4.5-air。",
             "default": ""
           }
         }
@@ -77,14 +77,14 @@
         "start": "00:30",
         "end": "08:30",
         "provider": "deepseek",
-        "model": "deepseek-v4-flash-vision"
+        "model": "deepseek-v4-flash"
       },
       {
         "name": "高峰（智谱）",
         "start": "08:30",
         "end": "00:30",
         "provider": "zhipu",
-        "model": "glm-4-air"
+        "model": "glm-4.5-air"
       }
     ]
   },
@@ -102,7 +102,7 @@
       "model": {
         "description": "模型名",
         "type": "string",
-        "hint": "如 deepseek-chat / glm-4-air。",
+        "hint": "如 deepseek-chat / glm-4.5-air。",
         "default": ""
       }
     },
