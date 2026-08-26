@@ -32,7 +32,7 @@
   "schedules": {
     "description": "时段规则",
     "type": "template_list",
-    "hint": "按列表顺序匹配，命中即切换到对应模型；支持跨天（如 22:00-08:00 表示夜间）。",
+    "hint": "按列表顺序匹配，命中即切换到对应 Provider；支持跨天（如 22:00-08:00 表示夜间）。",
     "templates": {
       "schedule": {
         "name": "时段",
@@ -57,15 +57,10 @@
             "default": "08:00"
           },
           "provider": {
-            "description": "模型供应商",
+            "description": "模型 Provider",
             "type": "string",
-            "hint": "填 AstrBot 里的服务商 ID，如 deepseek / zhipu / openai / doubao。",
-            "default": ""
-          },
-          "model": {
-            "description": "模型名",
-            "type": "string",
-            "hint": "该服务商下的模型名，如 deepseek-chat / glm-4.5-air。",
+            "hint": "下拉选择 AstrBot「模型供应商」里的完整 Provider ID（服务商/模型），如 deepseek/deepseek-v4-flash-vision-exp。",
+            "_special": "select_provider",
             "default": ""
           }
         }
@@ -76,39 +71,31 @@
         "name": "低谷（DeepSeek 错峰）",
         "start": "00:30",
         "end": "08:30",
-        "provider": "deepseek",
-        "model": "deepseek-v4-flash"
+        "provider": "deepseek/deepseek-v4-flash-vision-exp"
       },
       {
         "name": "高峰（智谱）",
         "start": "08:30",
         "end": "00:30",
-        "provider": "zhipu",
-        "model": "glm-4.5-air"
+        "provider": "zhipu/glm-4v-flash"
       }
     ]
   },
   "default_model": {
     "description": "默认模型（无时段命中时使用）",
     "type": "object",
-    "hint": "当所有时段都不命中时回退到该模型；provider 和 model 都留空表示不干预。",
+    "hint": "当所有时段都不命中时回退到该 Provider；留空表示不干预，走 AstrBot 默认模型。",
     "items": {
       "provider": {
-        "description": "模型供应商",
+        "description": "模型 Provider",
         "type": "string",
-        "hint": "如 deepseek / zhipu。",
-        "default": ""
-      },
-      "model": {
-        "description": "模型名",
-        "type": "string",
-        "hint": "如 deepseek-chat / glm-4.5-air。",
+        "hint": "下拉选择 AstrBot「模型供应商」里的完整 Provider ID（服务商/模型），如 deepseek/deepseek-v4-pro。",
+        "_special": "select_provider",
         "default": ""
       }
     },
     "default": {
-      "provider": "",
-      "model": ""
+      "provider": ""
     }
   }
 }
