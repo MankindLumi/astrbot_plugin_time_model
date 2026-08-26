@@ -289,13 +289,13 @@ class TimeModel(Star):
             pass
         return []
 
-    @filter.command("schedule", desc="查看当前配置与生效 Provider")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule", desc="查看当前配置与生效 Provider")
     async def cmd_help(self, event: AstrMessageEvent):
         yield event.plain_result(self._build_help())
 
-    @filter.command("schedule_now", desc="查看此刻会使用哪个 Provider")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_now", desc="查看此刻会使用哪个 Provider")
     async def cmd_now(self, event: AstrMessageEvent):
         now = self._now()
         src, provider_id = self._pick()
@@ -306,8 +306,8 @@ class TimeModel(Star):
             f"将使用：{provider_id}"
         )
 
-    @filter.command("schedule_add", desc="新增时段：<开始> <结束> <provider> [名字]")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_add", desc="新增时段：<开始> <结束> <provider> [名字]")
     async def cmd_add(self, event: AstrMessageEvent, *args):
         a = self._args(event, args)
         if len(a) < 3:
@@ -320,8 +320,8 @@ class TimeModel(Star):
         self._save()
         yield event.plain_result(f"已新增时段「{name}」：{start}-{end} → {provider}")
 
-    @filter.command("schedule_set", desc="修改时段：<序号> <开始> <结束> <provider>")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_set", desc="修改时段：<序号> <开始> <结束> <provider>")
     async def cmd_set(self, event: AstrMessageEvent, *args):
         a = self._args(event, args)
         if len(a) < 4:
@@ -343,8 +343,8 @@ class TimeModel(Star):
         self._save()
         yield event.plain_result(f"已更新第 {idx} 个时段。")
 
-    @filter.command("schedule_del", desc="删除时段：<序号>")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_del", desc="删除时段：<序号>")
     async def cmd_del(self, event: AstrMessageEvent, *args):
         a = self._args(event, args)
         if len(a) < 1:
@@ -363,8 +363,8 @@ class TimeModel(Star):
         self._save()
         yield event.plain_result(f"已删除时段「{removed.get('name')}」。")
 
-    @filter.command("schedule_default", desc="设置兜底默认 Provider（传 - 清空）")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_default", desc="设置兜底默认 Provider（传 - 清空）")
     async def cmd_default(self, event: AstrMessageEvent, *args):
         a = self._args(event, args)
         if len(a) < 1:
@@ -377,8 +377,8 @@ class TimeModel(Star):
             f"默认 Provider 设置为：{provider or '(不干预)'}"
         )
 
-    @filter.command("schedule_reload", desc="重新从文件加载配置")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_reload", desc="重新从文件加载配置")
     async def cmd_reload(self, event: AstrMessageEvent):
         if self._webui_cfg is not None:
             yield event.plain_result(
@@ -388,15 +388,15 @@ class TimeModel(Star):
         self._load()
         yield event.plain_result("已从文件重新加载配置。")
 
-    @filter.command("schedule_on", desc="启用时段切换模型")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_on", desc="启用时段切换模型")
     async def cmd_on(self, event: AstrMessageEvent):
         self.cfg["enable"] = True
         self._save()
         yield event.plain_result("已启用时段切换模型。")
 
-    @filter.command("schedule_off", desc="停用时段切换模型")
     @filter.permission_type(filter.PermissionType.ADMIN)
+    @filter.command("schedule_off", desc="停用时段切换模型")
     async def cmd_off(self, event: AstrMessageEvent):
         self.cfg["enable"] = False
         self._save()
